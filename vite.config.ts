@@ -19,4 +19,9 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+
+  build:{
+    outDir:'puusti-waitlist',
+    assetsDir: 'assets',
+  }
 }));
