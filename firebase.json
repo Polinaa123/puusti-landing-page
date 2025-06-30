@@ -33,7 +33,7 @@
     }
   },
   "hosting": {
-    "public": "puusti-waitlist",
+    "public": "dist",
     "ignore": [
       "firebase.json",
       "**/.*",

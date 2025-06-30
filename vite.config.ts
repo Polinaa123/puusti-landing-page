@@ -5,6 +5,7 @@ import { componentTagger } from "lovable-tagger";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
+  root: "puusti-waitlist",
   server: {
     host: "::",
     port: 8080,
@@ -21,7 +22,8 @@ export default defineConfig(({ mode }) => ({
   },
 
   build:{
-    outDir:'puusti-waitlist',
+    outDir: path.resolve(__dirname, "dist"),
+    emptyOutDir: true,
     assetsDir: 'assets',
   }
 }));
