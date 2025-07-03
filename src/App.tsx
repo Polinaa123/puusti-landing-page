@@ -5,8 +5,10 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
+import CopywritePage from "./pages/Copywrite";
 
 const queryClient = new QueryClient();
+const copyWriteEnabled = import.meta.env.VITE_ENABLE_COPYWRITE === 'true';
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -17,6 +19,9 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="*" element={<NotFound />} />
+          {copyWriteEnabled && (
+            <Route path="/copywrite" element={<CopywritePage />} />
+          )}
         </Routes>
       </BrowserRouter>
     </TooltipProvider>

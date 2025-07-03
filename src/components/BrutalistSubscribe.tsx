@@ -61,7 +61,7 @@ const BrutalistSubscribe = () => {
         <div className="container mx-auto px-8">
           <div className="max-w-2xl mx-auto">
             <h2 className="text-8xl md:text-9xl font-black font-mono mb-16 text-center text-[#22170c]">
-              SUBSCRIBE.
+              JOIN THE WAITLIST
             </h2>
             
             <form onSubmit={handleSubmit} className="space-y-12">

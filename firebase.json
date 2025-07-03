@@ -21,7 +21,7 @@
     },
     "firestore": {
       "host": "127.0.0.1",
-      "port": 8080
+      "port": 8082
     },
     "hosting": {
       "host": "127.0.0.1",
@@ -43,6 +43,14 @@
       {
         "source": "/api/waitlist",
         "function": "waitlist"
+      },
+      {
+        "source": "/api/helloOpenAI",
+        "function": "helloOpenAI"
+      },
+      {
+        "source": "/api/copywrite",
+        "function": "copywrite"
       },
       {
         "source": "**",

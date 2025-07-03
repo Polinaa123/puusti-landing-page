@@ -1,5 +1,7 @@
-
+import {Link} from 'react-router-dom';
 import React from 'react';
+
+const copyWriteEnabled = import.meta.env.VITE_ENABLE_COPYWRITE === 'true';
 
 const BrutalistHeader = () => {
   const scrollToSection = (sectionId: string) => {
@@ -42,6 +44,14 @@ const BrutalistHeader = () => {
             >
               CONTACT
             </button>
+            {copyWriteEnabled && (
+              <Link
+                to="/copywrite"
+                className="text-[#3ab54a] transition-colors uppercase tracking-wider"
+              >
+                COPYWRITE
+              </Link>
+            )}
           </div>
         </nav>
       </div>

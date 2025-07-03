@@ -25,3 +25,6 @@ dist-ssr
 
 /functions/serviceAccountKey.json
 /functions/lib/
+
+.env*
+!.env.example
