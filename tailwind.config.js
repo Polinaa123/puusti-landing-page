@@ -27,6 +27,10 @@ module.exports = {
         input: 'hsl(var(--input))',
         ring: 'hsl(var(--ring))',
       },
+      fontFamily: {
+        sans: ['"Inter"', 'ui-sans-serif', 'system-ui'],
+        heading: ['"Montserrat"', 'sans-serif'],
+      },
     },
   },
   plugins: [],

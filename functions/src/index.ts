@@ -72,7 +72,7 @@ export const copywrite=onRequest(
     const {platform, listing, services}= req.body as{
       platform: string;
       listing: string;
-      services: Array<'description'|'title'|'amenities'>;
+      services: Array<'description'|'title'>;
     };
     if(!platform || !listing || !services?.length){
         res.status(400).json({ error: 'Platform, listing, and services are required' });
@@ -97,9 +97,8 @@ export const copywrite=onRequest(
     const basePrompt= tplData.prompt;
 
     const tasks: string[]=[];
-    if(services.includes('description')) tasks.push('Write a description (≤ 200 words)');
-    if(services.includes('title')) tasks.push('Write a title (≤ 8 words)');
-    if (services.includes('amenities')) tasks.push('List 5 key amenities');
+    if(services.includes('description')) tasks.push('Write a description');
+    if(services.includes('title')) tasks.push('Write a title (50 characters including spaces)');
 
       const userPrompt=`
 ${basePrompt}
@@ -157,4 +156,3 @@ async function seedTemplates() {
   }
 }
 seedTemplates().catch(console.error);
-

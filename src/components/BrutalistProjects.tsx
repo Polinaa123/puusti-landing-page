@@ -1,13 +1,13 @@
-
+import {useIsMobile} from '../hooks/use-mobile';
 import React, {useRef} from 'react';
 
 const BrutalistProjects = () => {
+  const isMobile = useIsMobile();
   const projects = [
-    { id: 1, title: "MARKETPLACE", label: "FREELANCERS"},
-    { id: 2, title: " COPYWRITING", label: "DESCRIPTIONS"},
-    { id: 3, title: "QUICK START", label: "5 MINUTES"},
-    { id: 4, title: "COST SAVING", label: "TRANSPARENT"},
-    { id: 5, title: "REPORTING", label: "PDF FORMAT"}
+    { id: 1, title: "MARKETPLACE", label: "FREELANCER'S BEATING"},
+    { id: 2, title: "COPYWRITING TOOL", label: "DESCRIPTIONS"},
+    { id: 3, title: "A/B TESTING", label: "CHOOSE THE BEST OUT OF THE BEST"},
+    { id: 4, title: "DECORATION TOOLS", label: "MAKE YOUR VISUALS BETTER"},
   ];
 
   const containerRef = useRef<HTMLDivElement>(null);
@@ -23,12 +23,20 @@ const BrutalistProjects = () => {
 
   return (
     <section id="projects" className="pt-8 pb-16 bg-[#e6e7e8]">
-        <div className="flex items-center px-8 mb-4 space-x-6">
-          <h2 className="text-3xl text-center text-[#22170c] font-mono whitespace-nowrap">SERVICES</h2>
-
+      <div className={`
+        mb-4
+        ${isMobile
+          ? 'flex flex-col space-y-2 px-4'
+          : 'flex items-center px-8 space-x-6'
+        }
+      `}>
+        <h2 className="text-3xl text-[#22170c] font-mono">COMING SOON</h2>
         <div
           ref={containerRef}
-          className="flex space-x-4 overflow-x-auto no-scrollbar pl-24 pr-8 pb-4"
+          className={`
+            flex space-x-4 overflow-x-auto no-scrollbar pb-4
+            ${isMobile ? '' : 'pl-24 pr-8'}
+          `}
         >
           {projects.map((project) => (
             <div
@@ -49,8 +57,8 @@ const BrutalistProjects = () => {
               </div>
             ))}
           </div>
-          </div>
-
+        </div>
+        {!isMobile && (
           <div className="flex justify-end px-8 mt-4 space-x-2">
             <button
               onClick={() => scroll('left')}
@@ -63,6 +71,7 @@ const BrutalistProjects = () => {
               »
             </button>
           </div>
+        )}
       </section>
     );
   };

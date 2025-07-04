@@ -1,4 +1,5 @@
 import React from 'react';
+import { useIsMobile } from '../hooks/use-mobile';
 
 const BrutalistHero = () => {
   return (

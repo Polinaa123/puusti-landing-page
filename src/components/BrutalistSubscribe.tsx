@@ -59,11 +59,22 @@ const BrutalistSubscribe = () => {
     return (
       <section id="subscribe" className="py-32 bg-[#e6e7e8]">
         <div className="container mx-auto px-8">
-          <div className="max-w-2xl mx-auto">
-            <h2 className="text-8xl md:text-9xl font-black font-mono mb-16 text-center text-[#22170c]">
+          <div className="max-w-2xl mx-auto px-4 sm:px-8">
+            <h2
+              className="
+              mb-12 text-center font-black font-mono text-3xl
+              sm:text-4xl
+              md:text-8xl
+              lg:text-10xl
+              px-4 sm:px-8
+              max-w-full
+              md:max-w-2xl
+              mx-auto whitespace-normal
+              text-[#22170c]
+            "
+          >
               JOIN THE WAITLIST
             </h2>
-            
             <form onSubmit={handleSubmit} className="space-y-12">
               <div className="relative">
                 <input

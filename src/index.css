@@ -108,3 +108,6 @@
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+html, body {
+  overflow-x: hidden;
+}
