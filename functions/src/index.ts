@@ -96,25 +96,18 @@ export const copywrite=onRequest(
     }
     const basePrompt= tplData.prompt;
 
-    const tasks: string[]=[];
-    if(services.includes('description')) tasks.push('Write a description');
-    if(services.includes('title')) tasks.push('Write a title (50 characters including spaces)');
+    const promptText = basePrompt.replace(
+      '${listing}',
+      listing
+    );
 
-      const userPrompt=`
-${basePrompt}
-User Listing Text:
-${listing}
-Tasks:
-${tasks.join('\n')}
-      `.trim();
     try {
       const apiKey= await openaiKey.value();
       const openai= new OpenAI({apiKey});
       const completion= await openai.chat.completions.create({
         model:'gpt-3.5-turbo',
         messages:[
-          {role: 'system', content: 'You are a real estate copywriting assistant'},
-          {role: 'user', content: userPrompt}
+          { role: 'system', content: promptText }
         ],
         temperature: 0.7,
         max_tokens: 500,
@@ -125,17 +118,25 @@ ${tasks.join('\n')}
         res.status(500).json({ error: 'No content from OpenAI' });
         return;
       }
-      const result = choice.message.content.trim();
+      const raw = completion.choices[0].message.content?.trim() || '';
+      let parsed;
+      try {
+        parsed = JSON.parse(raw);
+      } catch {
+        console.error('OpenAI JSON parse error:', raw);
+        res.status(500).json({ error: 'Bad response format' });
+        return;
+      }
 
       await db.collection('copywrites').add({
         platform,
         listing,
         services,
-        result,
+        ...parsed,
         ts: FieldValue.serverTimestamp(),
       });
 
-      res.json({success: true, result});
+      res.json({success: true, ...parsed});
     } catch (error: unknown) {
       const msg= error instanceof Error ? error.message : 'Unknown error';
       console.error('Copywriting error:', msg);
@@ -145,11 +146,79 @@ ${tasks.join('\n')}
   }
 );
 async function seedTemplates() {
-  const templates = {
-    airbnb_A: "You are an expert Airbnb copywriter. Rewrite…",
-    booking_A:  "You are an expert Booking copywriter. Rewrite…",
-    own_A:      "You are an expert real estate copywriter. Rewrite…",
+  const templates: Record<string,string> = {
+    // Полный Airbnb-шаблон
+    airbnb_A: `
+You are an expert Airbnb copywriter with years of experience crafting listings that consistently rank on the first page and convert lookers into bookers. 
+
+Given the user’s raw listing input below, produce:
+1. A punchy, emotionally engaging Title (max 50 characters) that highlights the property’s single most compelling feature.
+2. A vivid Description (120–200 words) structured as:
+   • Hook: sensory or emotional appeal
+   • Highlights: 3–4 short points describing location and décor
+   • Call-to-Action: friendly invitation to book
+
+User Listing Input:
+\`\`\`
+\${listing}
+\`\`\`
+
+Respond in JSON:
+\`\`\`json
+{
+  "title": "...optimized title...",
+  "description": "...engaging description..."
+}
+\`\`\`
+`.trim(),
+
+    booking_A: `
+You are a top-tier Booking.com copywriter specializing in clear, professional descriptions that rank highly and drive bookings. 
+
+Given the user’s raw listing data below, generate:
+1. A crisp, SEO-friendly Headline (max 60 characters) with one keyword (e.g., city name).
+2. A structured Description (150–250 words) with:
+   • Overview: style & location (1–2 sentences)
+   • Room Details: 2–3 bullet points (room types, beds)
+   • Nearby Attractions: 2 short sentences
+   • Guest Promise: what makes this place special
+
+User Listing Input:
+\`\`\`
+\${listing}
+\`\`\`
+
+Return in JSON:
+\`\`\`json
+{
+  "headline": "...optimized headline...",
+  "description": "...full description..."
+}
+\`\`\`
+`.trim(),
+
+    own_A: `
+You are an expert real estate copywriter. 
+
+Given the user’s raw listing below, write a JSON with:
+1. "title": an SEO-optimized headline (≤60 chars)
+2. "description": a 150–200 word engaging description.
+
+User Listing Input:
+\`\`\`
+\${listing}
+\`\`\`
+
+Respond in JSON:
+\`\`\`json
+{
+  "title": "...",
+  "description": "..."
+}
+\`\`\`
+`.trim(),
   };
+
   for (const [id, prompt] of Object.entries(templates)) {
     await db.collection('promptTemplates').doc(id).set({ prompt });
     console.log(`Seeded ${id}`);
