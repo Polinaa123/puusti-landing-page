@@ -3,13 +3,18 @@ import {parseSection} from '@/lib/utils';
 
 type Platform = 'airbnb' | 'booking' | 'own'
 
+interface CopyResult{
+    title: string;
+    description: string;
+}
+
 export default function CopywritePage() {
     const [platform, setPlatform]= useState<Platform>('airbnb')
     const [listingTitle, setListingTitle] = useState('')
     const [listingDesc, setListingDesc] = useState('')
     const [loading, setLoading]= useState(false);
     const [error, setError]= useState<string | null>(null);
-    const [result, setResult]= useState<string | null>(null);
+    const [result, setResult]= useState<CopyResult | null>(null);
 
 
     const handleManualReview = async () => {
@@ -36,23 +41,32 @@ export default function CopywritePage() {
         setError(null)
         setResult(null)
         try {
-          const resp = await fetch(
-            'http://localhost:5001/puusti-waitlist/us-central1/copywrite',
-            {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                platform,
-                listing: `${listingTitle}\n\n${listingDesc}`,
-                services: ['title', 'description'],
-              }),
+            const resp = await fetch('/api/copywrite', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    platform,
+                    listing: `${listingTitle}\n\n${listingDesc}`
+                })
+            })
+            const raw= await resp.text();
+            if (!resp.ok) {
+                let msg: string;
+                try {
+                    const err = JSON.parse(raw) as { error?: string }
+                    msg = err.error ?? raw
+                } catch {
+                    msg = raw
+                }
+                throw new Error(msg);
             }
-          )
-          const data = await resp.json()
-          if (!resp.ok || !data.success) {
-            throw new Error(data.error || `HTTP ${resp.status}`)
-          }
-          setResult(data.result)
+            let data: CopyResult
+            try {
+                data = JSON.parse(raw) as CopyResult
+            } catch {
+                throw new Error('Invalid JSON from server')
+            }
+            setResult(data);
         } catch (e: unknown) {
           console.error(e)
           setError(e instanceof Error ? e.message : 'Unknown error')
@@ -68,18 +82,20 @@ export default function CopywritePage() {
                     <div id="copywrite-result" className="bg-white p-8 mx-auto mt-8 shadow-md w-full max-w-4xl">
                         <section className="mb-6">
                             <h2 className="text-xl font-bold rounded-xl mb-2">TITLE</h2>
-                            <p className= "text-gray-700 rounded-xl text-lg">{parseSection(result, 'Title')}</p>
+                            <p className="text-gray-700 rounded-xl text-lg">
+                                {result.title}
+                            </p>
                         </section>
                         <section className="mb-6">
                             <h2 className="text-xl font-bold rounded-xl mb-2">DESCRIPTION</h2>
                             <p className="whitespace-pre-wrap rounded-xl text-gray-700 text-lg">
-                                {parseSection(result, 'Description')}
+                                {result.description}
                             </p>
                         </section>
                         <div className="flex justify-end space-x-4">
                             <button
                                 className="px-4 py-2 bg-[#3ab54a] rounded-xl text-white font-semibold shadow-md hover:bg-green-600 transition duration-300"
-                                onClick={() => navigator.clipboard.writeText(result)}
+                                onClick={() => navigator.clipboard.writeText(`${result.title}\n\n${result.description}`)}
                             >
                                 ACCEPT
                             </button>

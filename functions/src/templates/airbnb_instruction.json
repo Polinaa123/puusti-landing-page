@@ -1,0 +1,14 @@
+{
+    "basePrompt": "You are an experienced copywriter specializing in Airbnb. Your task is to transform a dry property description into a lively, engaging text that boosts guest interest and conversion.",
+    "steps": [
+      {
+        "field": "title",
+        "instruction": "Generate a short, punchy title (up to 50 characters) that includes the location and one key highlight of the space (e.g. view, style, unique amenity)."
+      },
+      {
+        "field": "description",
+        "instruction": "Write an engaging description (100–150 words) in 2–3 paragraphs: first briefly set the scene and atmosphere, then list 3–5 standout amenities, and finish with a gentle CTA (e.g. “Book now,” “Perfect for…”)."
+      }
+    ]
+  }
+  
