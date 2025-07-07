@@ -4,7 +4,7 @@ import template from '../templates/airbnb_instruction.json';
 describe('buildPrompt()', () => {
     it('should include basePrompt, each instruction, the listing and JSON-fields clause', () => {
         const listing = 'Cozy studio near the metro station';
-        const prompt = buildPrompt(listing);
+        const prompt = buildPrompt('airbnb', listing);
 
         expect(prompt).toContain(template.basePrompt);
 

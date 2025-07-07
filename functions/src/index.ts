@@ -4,11 +4,11 @@ import * as admin from 'firebase-admin';
 import OpenAI from 'openai';
 import { getFirestore, FieldValue } from 'firebase-admin/firestore';
 import type { Request, Response } from 'express';
-import template from './templates/airbnb_instruction.json';
+import airbnbTemplate from './templates/airbnb_instruction.json';
+import genericTemplate from './templates/generic_instruction.json';
 
 admin.initializeApp();
 const db = getFirestore();
-
 const openaiKey = defineSecret('OPENAI_KEY');
 
 export interface Step{
@@ -16,9 +16,10 @@ export interface Step{
   instruction: string;
 }
 
-export function buildPrompt(listing: string): string{
-  const base = template.basePrompt;
-  const steps = template.steps;
+export function buildPrompt(platform: 'airbnb'|'own', listing: string): string {
+  const tpl = platform === 'airbnb' ? airbnbTemplate : genericTemplate;
+  const base = tpl.basePrompt;
+  const steps = tpl.steps as Step[];
   const stepsText = steps
     .map((s, idx) => `${idx + 1}. ${s.field.toUpperCase()}: ${s.instruction}`)
     .join('\n');
@@ -93,12 +94,12 @@ export const copywrite=onRequest(
   {cors:true, secrets: [openaiKey]},
   async (req: Request, res: Response) => {
     const {platform, listing}= req.body as{platform: string; listing: string};
-    if (platform !== 'airbnb' || !listing) {
-      res.status(400).json({ error: 'Platform must be "airbnb" and listing is required' });
+    if ((platform !== 'airbnb' && platform !== 'own') || !listing) {
+      res.status(400).json({ error: 'Platform must be "airbnb" or "own website" and listing is required' });
       return;
     }
 
-    const systemPrompt = buildPrompt(listing);
+    const systemPrompt = buildPrompt(platform as 'airbnb' | 'own', listing);
 
     try {
       const apiKey= await openaiKey.value();
@@ -110,7 +111,7 @@ export const copywrite=onRequest(
       });
 
       const raw = completion.choices[0].message?.content?.trim() || '';
-      let parsed: Record<string, string>;
+      let parsed: { title: string; description: string };
       try {
         parsed = JSON.parse(raw);
       } catch {
@@ -119,14 +120,20 @@ export const copywrite=onRequest(
         return;
       }
 
-      await db.collection('copywrites').add({
+      const docRef= await db.collection('copywrites').add({
         platform,
         listing,
         ...parsed,
+        status:'pending',
         ts: FieldValue.serverTimestamp(),
       });
 
-      res.json(parsed);
+      res.status(200).json({
+        id: docRef.id,
+        title: parsed.title,
+        description: parsed.description,
+        status: 'pending',
+      });
       return;
 
     } catch (err: unknown) {
@@ -134,6 +141,49 @@ export const copywrite=onRequest(
       console.error('Copywriting error:', message);
       res.status(500).json({ error: message });
       return;
+    }
+  }
+);
+
+export const acceptCopy= onRequest(
+  {cors: true },
+  async (req: Request, res: Response) => {
+    const {id}= req.body as {id?:string};
+    if(!id){
+      res.status(400).json({error: 'Missing copy ID'});
+      return;
+    }
+    try{
+      await db.collection('copywrites').doc(id).update({
+        status: 'accepted',
+        acceptedAt: FieldValue.serverTimestamp(),
+      });
+      res.status(200).json({pk:true});
+    }catch (e: unknown) {
+      console.error('Accept error:', e);
+      res.status(500).json({error: 'Failed to accept copy'});
+    }
+  }
+);
+
+export const requestReview= onRequest(
+  {cors:true},
+  async (req: Request, res: Response) => {
+    const {id}= req.body as {id?:string};
+    if(!id){
+      res.status(400).json({error: 'Missing copy ID'});
+      return;
+    }
+    try{
+      await db.collection('copywrites').doc(id).update({
+        status: 'review',
+        reviewRequestedAt: FieldValue.serverTimestamp(),
+      });
+      // TODO: подставить реальный URL Stripe Checkout v budushjem
+      res.status(200).json({pk:true});
+    }catch (e: unknown) {
+      console.error('Review request error:', e);
+      res.status(500).json({error: 'Failed to request review'});
     }
   }
 );

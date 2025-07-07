@@ -55,6 +55,14 @@
       {
         "source": "**",
         "destination": "/index.html"
+      },
+      {
+        "source": "/api/acceptCopy",
+        "function": "acceptCopy"
+      },
+      {
+        "source": "/api/requestReview",
+        "function": "requestReview"
       }
     ]
   }
