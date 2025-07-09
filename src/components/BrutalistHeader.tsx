@@ -20,10 +20,11 @@ const BrutalistHeader = () => {
     <header className="fixed inset-x-4 sm:inset-x-8 top-4 bg-black/10 backdrop-blur-md rounded-xl shadow-lg z-50">
       <div className="container mx-auto px-4 sm:px-8 py-4">
         <nav className="flex justify-between items-center">
-          <div className="text-2xl font-black font-mono text-[#3ab54a]">
-            PUUSTI
-          </div>
-          
+          <img
+            src="/puustilogo1.png"
+            alt="Logo"
+            className="h-7"
+          />
           {!isMobile && (
             <div className="flex space-x-8 font-mono text-sm font-bold">
               <button
