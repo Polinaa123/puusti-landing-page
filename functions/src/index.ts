@@ -103,6 +103,7 @@ export const copywrite=onRequest(
 
     try {
       const apiKey= await openaiKey.value();
+      console.log("API Key:", apiKey);
       const openai= new OpenAI({apiKey});
       const completion= await openai.chat.completions.create({
         model:'gpt-3.5-turbo',
@@ -111,12 +112,20 @@ export const copywrite=onRequest(
       });
 
       const raw = completion.choices[0].message?.content?.trim() || '';
+      console.log("Raw response from OpenAI:", raw);
+
       let parsed: { title: string; description: string };
       try {
         parsed = JSON.parse(raw);
-      } catch {
+      } catch (error){
         console.error('OpenAI JSON parse error:', raw);
         res.status(500).json({ error: 'Bad response format' });
+        return;
+      }
+
+      if (!parsed.title || !parsed.description) {
+        console.error('Missing expected fields in OpenAI response:', parsed);
+        res.status(500).json({ error: 'Response must contain title and description' });
         return;
       }
 
@@ -162,28 +171,6 @@ export const acceptCopy= onRequest(
     }catch (e: unknown) {
       console.error('Accept error:', e);
       res.status(500).json({error: 'Failed to accept copy'});
-    }
-  }
-);
-
-export const requestReview= onRequest(
-  {cors:true},
-  async (req: Request, res: Response) => {
-    const {id}= req.body as {id?:string};
-    if(!id){
-      res.status(400).json({error: 'Missing copy ID'});
-      return;
-    }
-    try{
-      await db.collection('copywrites').doc(id).update({
-        status: 'review',
-        reviewRequestedAt: FieldValue.serverTimestamp(),
-      });
-      // TODO: подставить реальный URL Stripe Checkout v budushjem
-      res.status(200).json({pk:true});
-    }catch (e: unknown) {
-      console.error('Review request error:', e);
-      res.status(500).json({error: 'Failed to request review'});
     }
   }
 );

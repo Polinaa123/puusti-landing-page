@@ -7,7 +7,7 @@
       },
       {
         "field": "description",
-        "instruction": "Write an engaging description (120–180 words) in 2–3 paragraphs: start with a compelling overview, then list 4–6 key amenities or features, and finish with a clear call-to-action (e.g., “Book now to enjoy…”)."
+        "instruction": "Write an engaging description (120–180 words) in 2–3 paragraphs using line breaks and bullet points: start with a compelling overview, then list 4–6 key amenities or features, and finish with a clear call-to-action (e.g., “Book now to enjoy…”). Ensure the description flows as one cohesive text with paragraphs and bullet points, but do not split it into multiple fields"
       }
     ]
   }

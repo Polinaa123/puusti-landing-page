@@ -28,14 +28,12 @@ export default function CopywritePage() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ id: copyId }),
             });
-            const body = await resp.json() as { ok?: boolean; paymentUrl?: string; error?: string };
+            const body = await resp.json();
             if (!body.ok) throw new Error(body.error || `HTTP ${resp.status}`);
-            window.location.href = body.paymentUrl!;
-        } catch (e: unknown) {
-            console.error(e)
-            alert(e instanceof Error ? e.message : 'Failed to request review');
-        } finally {
-            setLoading(false);
+            alert('Email sent!');
+        } catch (e) {
+            console.error(e);
+            alert(e instanceof Error ? e.message : 'Failed to send review email');
         }
     };
 
