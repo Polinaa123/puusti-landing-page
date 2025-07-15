@@ -1,15 +1,17 @@
 import {onRequest } from 'firebase-functions/v2/https';
 import { defineSecret } from 'firebase-functions/params';
-import * as admin from 'firebase-admin';
 import OpenAI from 'openai';
 import { getFirestore, FieldValue } from 'firebase-admin/firestore';
 import type { Request, Response } from 'express';
 import airbnbTemplate from './templates/airbnb_instruction.json';
 import genericTemplate from './templates/generic_instruction.json';
+import * as admin from 'firebase-admin';
+import sgMail from '@sendgrid/mail';
 
 admin.initializeApp();
 const db = getFirestore();
 const openaiKey = defineSecret('OPENAI_KEY');
+const sendGridKey = defineSecret('SENDGRID_API_KEY');
 
 export interface Step{
   field: string;
@@ -174,3 +176,33 @@ export const acceptCopy= onRequest(
     }
   }
 );
+
+export const requestReview = onRequest(
+  {cors: true, secrets: [sendGridKey]},
+  async(req, res) => {
+    const apiKey = await sendGridKey.value();
+    sgMail.setApiKey(apiKey);
+
+    const { id } = req.body;
+    if (!id) {
+      res.status(400).json({ error: 'Copy ID is required' });
+      return;
+    }
+    const msg={
+      to:`hellopuusti@gmail.com`,
+      from: `hellopuusti@gmail.com`,
+      reply_to: 'polina.antonoff@gmail.com',
+      subject: `New request for review`,
+      text: `The user has requested a manual review for the copy with ID: ${id}.`,
+      html: `<strong>The user has requested a manual review for the copy with ID: ${id}.</strong>`,
+    };
+
+    try{
+      await sgMail.send(msg);
+      console.log('Email sent successfully');
+      res.status(200).json({ ok: true });
+    } catch (error){
+      console.error(error);
+      res.status(500).json({ error: 'Failed to send email' });
+    }
+});

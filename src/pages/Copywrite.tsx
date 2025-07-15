@@ -28,8 +28,11 @@ export default function CopywritePage() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ id: copyId }),
             });
+
             const body = await resp.json();
-            if (!body.ok) throw new Error(body.error || `HTTP ${resp.status}`);
+            if (!body.ok) {
+                throw new Error(body.error || `HTTP ${resp.status}`);
+            }
             alert('Email sent!');
         } catch (e) {
             console.error(e);
